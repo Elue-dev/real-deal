@@ -1,17 +1,12 @@
 defmodule RealDealApiWeb.Auth.Guardian do
     use Guardian, otp_app: :real_deal_api
+
     alias RealDealApi.Accounts
 
-    def subject_for_token(%{id: id}, _claims) do
-      sub = to_string(id)
-      {:ok, sub}
-    end
+    def subject_for_token(%{id: id}, _claims), do: {:ok, to_string(id)}
+    def subject_for_token(_, _), do: {:error, :no_id_provided}
 
-    def subject_for_token(_, _) do
-      {:error, :no_id_provided}
-    end
-
-    def resorurce_from_claims(%{"sub" => id}) do
+    def resource_from_claims(%{"sub" => id}) do
       case Accounts.get_account!(id) do
         nil -> {:error, :not_found}
         resource -> {:ok, resource}
@@ -38,7 +33,12 @@ defmodule RealDealApiWeb.Auth.Guardian do
     end
 
     defp create_token(account) do
-      {:ok, token, _claims} = encode_and_sign(account)
-      {:ok, account, token}
+      case encode_and_sign(account, %{}, token_type: :access) do
+        {:ok, token, _claims} ->
+          {:ok, account, token}
+
+        {:error, reason} ->
+          {:error, reason}
+      end
     end
 end
