@@ -33,12 +33,7 @@ defmodule RealDealApiWeb.Auth.Guardian do
     end
 
     defp create_token(account) do
-      case encode_and_sign(account, %{}, token_type: :access) do
-        {:ok, token, _claims} ->
-          {:ok, account, token}
-
-        {:error, reason} ->
-          {:error, reason}
-      end
+        {:ok, token, _claims} = encode_and_sign(account)
+        {:ok, account, token}
     end
 end
