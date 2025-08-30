@@ -21,4 +21,22 @@ defmodule RealDealApiWeb.FallbackController do
     |> put_view(html: RealDealApiWeb.ErrorHTML, json: RealDealApiWeb.ErrorJSON)
     |> render(:"404")
   end
+
+  def call(conn, {:error, :unauthorized}) do
+    conn
+    |> put_status(:unauthorized)
+    |> json(%{error: "Invalid credentials"})
+  end
+
+  def call(conn, {:error, :bad_request}) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{error: "Invalid parameters"})
+  end
+
+  def call(conn, {:error, _reason}) do
+    conn
+    |> put_status(:internal_server_error)
+    |> json(%{error: "Internal server error"})
+  end
 end

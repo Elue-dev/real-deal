@@ -29,4 +29,10 @@ defmodule RealDealApiWeb.AccountJSON do
       email: account.email,
     }
   end
+
+  # def error(%{message: message}) do
+  #   %{
+  #     error: message
+  #   }
+  # end
 end

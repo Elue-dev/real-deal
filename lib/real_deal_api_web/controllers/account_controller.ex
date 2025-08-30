@@ -22,6 +22,24 @@ defmodule RealDealApiWeb.AccountController do
     end
   end
 
+
+def login(conn, %{"email" => email, "hash_password" => password}) do
+  case Guardian.authenticate(email, password) do
+    {:ok, account, token} ->
+      conn
+      |> put_status(:ok)
+      |> render(:show, account: account, token: token)
+
+    {:error, _reason} ->
+     {:error, :unauthorized}
+  end
+end
+
+def login(_conn, _params) do
+  {:error, :bad_request}
+end
+
+
   def show(conn, %{"id" => id}) do
     account = Accounts.get_account!(id)
     render(conn, :show, account: account)
