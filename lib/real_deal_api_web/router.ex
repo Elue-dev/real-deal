@@ -44,6 +44,7 @@ scope "/api", RealDealApiWeb do
    pipe_through [:api, :auth]
 
    get "/me", AccountController, :me
+   get "/accounts/logout", AccountController, :logout
    patch "/accounts/:id", AccountController, :update
    delete "/accounts/:id", AccountController, :delete
 end

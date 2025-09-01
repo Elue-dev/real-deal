@@ -16,7 +16,7 @@ defmodule RealDealApiWeb.AccountController do
   #   end
   # end
   
-  defp is_authorized_account(%{params: %{"id" => id}, assigns: %{account: %{"id": id}}} = conn, _params), 
+  defp is_authorized_account(%{params: %{"id" => id}, assigns: %{account: %{id: id}}} = conn, _params), 
   do: conn
   
   defp is_authorized_account(_conn, _params),
@@ -55,6 +55,18 @@ defmodule RealDealApiWeb.AccountController do
     {:error, :bad_request}
   end
 
+
+  def logout(conn, %{}) do
+    account = conn.assigns[:account]
+    token = conn |> Guardian.Plug.current_token()
+    token |> Guardian.revoke()
+
+    conn
+    |> Plug.Conn.clear_session()
+    |> put_status(:ok)
+    |> json(%{message: "logout successful"})
+  end
+
   # def me(conn, %{"id" => id}) do
   #   account = Accounts.get_account!(id)
   #   render(conn, :show, account: account)
@@ -63,8 +75,6 @@ defmodule RealDealApiWeb.AccountController do
   def me(conn, _params) do
     render(conn, :show, account: conn.assigns.account)
   end
-
- 
   
 def update(conn, %{"account" => account_params}) do
   account = conn.assigns.account
