@@ -45,6 +45,7 @@ scope "/api", RealDealApiWeb do
 
    get "/me", AccountController, :me
    get "/accounts/logout", AccountController, :logout
+   get "/accounts/refresh_session", AccountController, :refresh_session
    patch "/accounts/:id", AccountController, :update
    delete "/accounts/:id", AccountController, :delete
 end
