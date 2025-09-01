@@ -18,6 +18,10 @@ defmodule RealDealApiWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :auth do
+    plug RealDealApiWeb.Auth.Pipeline
+  end
+
   scope "/api", RealDealApiWeb do
     pipe_through :api
 
@@ -25,4 +29,11 @@ defmodule RealDealApiWeb.Router do
     post "/accounts/create", AccountController, :create
     post "/accounts/login", AccountController, :login
   end
+
+scope "/api", RealDealApiWeb do
+   pipe_through [:api, :auth]
+
+   get "/accounts/:id", AccountController, :show
+end
+
 end
