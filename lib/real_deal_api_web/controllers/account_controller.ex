@@ -1,11 +1,26 @@
 defmodule RealDealApiWeb.AccountController do
   use RealDealApiWeb, :controller
 
-
   alias RealDealApi.{Accounts, Accounts.Account, Users, Users.User}
-  alias RealDealApiWeb.Auth.Guardian
+  alias RealDealApiWeb.{Auth.Guardian, Auth.ErrorResponse}
+  
+  plug :is_authorized_account when action in [:update, :delete]
 
   action_fallback RealDealApiWeb.FallbackController
+
+  # defp is_authorized_account(conn, _params) do
+  #   if conn.assigns.account.id == conn.params["id"] do
+  #     conn
+  #   else
+  #     raise ErrorResponse.Forbidden
+  #   end
+  # end
+  
+  defp is_authorized_account(%{params: %{"id" => id}, assigns: %{account: %{"id": id}}} = conn, _params), 
+  do: conn
+  
+  defp is_authorized_account(_conn, _params),
+  do: raise ErrorResponse.Forbidden
 
   def index(conn, _params) do
     accounts = Accounts.list_accounts()
@@ -40,8 +55,7 @@ defmodule RealDealApiWeb.AccountController do
     {:error, :bad_request}
   end
 
-
-  # def show(conn, %{"id" => id}) do
+  # def me(conn, %{"id" => id}) do
   #   account = Accounts.get_account!(id)
   #   render(conn, :show, account: account)
   # end
@@ -50,19 +64,22 @@ defmodule RealDealApiWeb.AccountController do
     render(conn, :show, account: conn.assigns.account)
   end
 
-  def update(conn, %{"id" => id, "account" => account_params}) do
-    account = Accounts.get_account!(id)
+ 
+  
+def update(conn, %{"account" => account_params}) do
+  account = conn.assigns.account
 
-    with {:ok, %Account{} = account} <- Accounts.update_account(account, account_params) do
-      render(conn, :show, account: account)
-    end
+  with {:ok, %Account{} = account} <- Accounts.update_account(account, account_params) do
+    render(conn, :show, account: account)
   end
+end
 
-  def delete(conn, %{"id" => id}) do
-    account = Accounts.get_account!(id)
+def delete(conn, _params) do
+  account = conn.assigns.account
 
-    with {:ok, %Account{}} <- Accounts.delete_account(account) do
-      send_resp(conn, :no_content, "")
-    end
+  with {:ok, %Account{}} <- Accounts.delete_account(account) do
+    send_resp(conn, :no_content, "")
   end
+end
+
 end

@@ -34,6 +34,12 @@ defmodule RealDealApiWeb.FallbackController do
     |> json(%{error: "Invalid parameters"})
   end
 
+  def call(conn, {:error, :forbidden}) do
+    conn
+    |> put_status(:forbidden)
+    |> json(%{error: "Forbidden"})
+  end
+
   def call(conn, {:error, _reason}) do
     conn
     |> put_status(:internal_server_error)

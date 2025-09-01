@@ -14,6 +14,14 @@ defmodule RealDealApiWeb.Router do
     |> halt()
   end
 
+   def handle_errors(conn, %{reason: reason}) do
+    conn
+    |> put_status(:internal_server_error)
+    |> Phoenix.Controller.json(%{errors: inspect(reason)})
+    |> halt()
+  end
+
+
   pipeline :api do
     plug :accepts, ["json"]
     plug :fetch_session
@@ -35,7 +43,9 @@ defmodule RealDealApiWeb.Router do
 scope "/api", RealDealApiWeb do
    pipe_through [:api, :auth]
 
-   get "/me", AccountController, :show
+   get "/me", AccountController, :me
+   patch "/accounts/:id", AccountController, :update
+   delete "/accounts/:id", AccountController, :delete
 end
 
 end

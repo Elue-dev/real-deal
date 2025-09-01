@@ -12,8 +12,6 @@ defmodule RealDealApiWeb.Auth.SetAccount do
 
     account_id =  conn |> get_session(:account_id)
 
-    if account_id == nil, do: raise ErrorResponse.Unauthorized
-
     account = Accounts.get_account!(account_id)
     cond do
       account_id && account -> conn |> assign(:account, account)
