@@ -27,6 +27,7 @@ defmodule RealDealApiWeb.AccountController do
     case Guardian.authenticate(email, password) do
       {:ok, account, token} ->
         conn
+        |> Plug.Conn.put_session(:account_id, account.id)
         |> put_status(:ok)
         |> render(:show, account: account, token: token)
 
@@ -40,9 +41,13 @@ defmodule RealDealApiWeb.AccountController do
   end
 
 
-  def show(conn, %{"id" => id}) do
-    account = Accounts.get_account!(id)
-    render(conn, :show, account: account)
+  # def show(conn, %{"id" => id}) do
+  #   account = Accounts.get_account!(id)
+  #   render(conn, :show, account: account)
+  # end
+
+  def me(conn, _params) do
+    render(conn, :show, account: conn.assigns.account)
   end
 
   def update(conn, %{"id" => id, "account" => account_params}) do
