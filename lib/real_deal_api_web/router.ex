@@ -22,6 +22,7 @@ defmodule RealDealApiWeb.Router do
   end
 
 
+
   pipeline :api do
     plug :accepts, ["json"]
     plug :fetch_session
@@ -36,18 +37,17 @@ defmodule RealDealApiWeb.Router do
     pipe_through :api
 
     get "/", DefaultController, :index
-    post "/accounts/create", AccountController, :create
+    post "/accounts/register", AccountController, :create
     post "/accounts/login", AccountController, :login
   end
 
-scope "/api", RealDealApiWeb do
-   pipe_through [:api, :auth]
+  scope "/api", RealDealApiWeb do
+    pipe_through [:api, :auth]
 
-   get "/me", AccountController, :me
-   get "/accounts/logout", AccountController, :logout
-   get "/accounts/refresh_session", AccountController, :refresh_session
-   patch "/accounts/:id", AccountController, :update
-   delete "/accounts/:id", AccountController, :delete
-end
-
+    get "/me", AccountController, :me
+    get "/accounts/logout", AccountController, :logout
+    get "/accounts/refresh_session", AccountController, :refresh_session
+    patch "/accounts/:id", AccountController, :update
+    delete "/accounts/:id", AccountController, :delete
+  end
 end

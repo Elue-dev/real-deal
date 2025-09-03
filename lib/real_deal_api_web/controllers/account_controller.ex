@@ -3,7 +3,7 @@ defmodule RealDealApiWeb.AccountController do
 
   alias RealDealApi.{Accounts, Accounts.Account, Users, Users.User}
   alias RealDealApiWeb.{Auth.Guardian, Auth.ErrorResponse}
-  
+
   plug :is_authorized_account when action in [:update, :delete]
 
   action_fallback RealDealApiWeb.FallbackController
@@ -15,12 +15,15 @@ defmodule RealDealApiWeb.AccountController do
   #     raise ErrorResponse.Forbidden
   #   end
   # end
-  
-  defp is_authorized_account(%{params: %{"id" => id}, assigns: %{account: %{id: id}}} = conn, _params), 
-  do: conn
-  
+
+  defp is_authorized_account(
+         %{params: %{"id" => id}, assigns: %{account: %{id: id}}} = conn,
+         _params
+       ),
+       do: conn
+
   defp is_authorized_account(_conn, _params),
-  do: raise ErrorResponse.Forbidden
+    do: raise(ErrorResponse.Forbidden)
 
   def index(conn, _params) do
     accounts = Accounts.list_accounts()
@@ -29,16 +32,20 @@ defmodule RealDealApiWeb.AccountController do
 
   def create(conn, %{"account" => account_params}) do
     with {:ok, %Account{} = account} <- Accounts.create_account(account_params),
-         {:ok, token, _claims} <- Guardian.encode_and_sign(account),
          {:ok, %User{} = _user} <- Users.create_user(account, account_params) do
-      conn
-      |> put_status(:created)
-      |> render(:show, account: account, token: token)
+      authorize_account(conn, account.email, account_params["hash_password"])
     end
   end
 
-
   def login(conn, %{"email" => email, "hash_password" => password}) do
+    authorize_account(conn, email, password)
+  end
+
+  def login(_conn, _params) do
+    {:error, :bad_request}
+  end
+
+  defp authorize_account(conn, email, password) do
     case Guardian.authenticate(email, password) do
       {:ok, account, token} ->
         conn
@@ -47,39 +54,22 @@ defmodule RealDealApiWeb.AccountController do
         |> render(:show, account: account, token: token)
 
       {:error, _reason} ->
-      {:error, :unauthorized}
+        {:error, :unauthorized}
     end
   end
 
-  def login(_conn, _params) do
-    {:error, :bad_request}
+  def refresh_session(conn, %{}) do
+    token = conn |> Guardian.Plug.current_token()
+    {:ok, account, new_token} = Guardian.authenticate(token)
+
+    conn
+    |> Plug.Conn.put_session(:account_id, account.id)
+    |> put_status(:ok)
+    |> render(:show, account: account, token: new_token)
   end
 
-
- def refresh_session(conn, %{}) do
-   old_token = conn |> Guardian.Plug.current_token()
-   case old_token |> Guardian.decode_and_verify() do
-     {:ok, claims} -> 
-      case claims |> Guardian.resource_from_claims() do
-        {:ok, account} ->
-          {:ok, _old, {new_token, _new_claims}} = old_token |> Guardian.refresh()
-            conn 
-            |> Plug.Conn.put_session(:account_id, account.id)
-            |> put_status(:ok)
-            |> render(:show, account: account, token: new_token)
-        {:error, _reason} -> 
-          raise ErrorResponse.NotFound
-          
-      end
-     {:error, _reason} ->  
-      raise ErrorResponse.NotFound
-   end
- end
-
-
-
   def logout(conn, %{}) do
-    account = conn.assigns[:account]
+    _account = conn.assigns[:account]
     token = conn |> Guardian.Plug.current_token()
     token |> Guardian.revoke()
 
@@ -89,30 +79,32 @@ defmodule RealDealApiWeb.AccountController do
     |> json(%{message: "logout successful"})
   end
 
-
   # def me(conn, %{"id" => id}) do
   #   account = Accounts.get_account!(id)
   #   render(conn, :show, account: account)
   # end
 
-  def me(conn, _params) do
-    render(conn, :show, account: conn.assigns.account)
-  end
-  
-def update(conn, %{"account" => account_params}) do
-  account = conn.assigns.account
+  # def me(conn, _params) do
+  #   render(conn, :show, account: conn.assigns.account)
+  # end
 
-  with {:ok, %Account{} = account} <- Accounts.update_account(account, account_params) do
+  def me(%{assigns: %{account: account}} = conn, _params) do
     render(conn, :show, account: account)
   end
-end
 
-def delete(conn, _params) do
-  account = conn.assigns.account
+  def update(conn, %{"account" => account_params}) do
+    account = conn.assigns.account
 
-  with {:ok, %Account{}} <- Accounts.delete_account(account) do
-    send_resp(conn, :no_content, "")
+    with {:ok, %Account{} = account} <- Accounts.update_account(account, account_params) do
+      render(conn, :show, account: account)
+    end
   end
-end
 
+  def delete(conn, _params) do
+    account = conn.assigns.account
+
+    with {:ok, %Account{}} <- Accounts.delete_account(account) do
+      send_resp(conn, :no_content, "")
+    end
+  end
 end

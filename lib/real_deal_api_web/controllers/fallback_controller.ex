@@ -25,13 +25,13 @@ defmodule RealDealApiWeb.FallbackController do
   def call(conn, {:error, :unauthorized}) do
     conn
     |> put_status(:unauthorized)
-    |> json(%{error: "Invalid credentials"})
+    |> json(%{error: "invalid credentials"})
   end
 
   def call(conn, {:error, :bad_request}) do
     conn
     |> put_status(:bad_request)
-    |> json(%{error: "Invalid parameters"})
+    |> json(%{error: "invalid parameters"})
   end
 
   def call(conn, {:error, :forbidden}) do
