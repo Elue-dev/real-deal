@@ -48,5 +48,6 @@ defmodule RealDealApiWeb.Router do
     patch "/accounts/:id", AccountController, :update
     delete "/accounts/:id", AccountController, :delete
     patch "/users", UserController, :update
+    get "/users", UserController, :index
   end
 end
