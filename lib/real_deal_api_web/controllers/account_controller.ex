@@ -2,28 +2,13 @@ defmodule RealDealApiWeb.AccountController do
   use RealDealApiWeb, :controller
 
   alias RealDealApi.{Accounts, Accounts.Account, Users, Users.User}
-  alias RealDealApiWeb.{Auth.Guardian, Auth.ErrorResponse}
+  alias RealDealApiWeb.Auth.Guardian
 
-  plug :is_authorized_account when action in [:update, :delete]
+  import RealDealApiWeb.Auth.AuthorizedPlug
+
+  plug :is_authorized when action in [:update, :delete]
 
   action_fallback RealDealApiWeb.FallbackController
-
-  # defp is_authorized_account(conn, _params) do
-  #   if conn.assigns.account.id == conn.params["id"] do
-  #     conn
-  #   else
-  #     raise ErrorResponse.Forbidden
-  #   end
-  # end
-
-  defp is_authorized_account(
-         %{params: %{"id" => id}, assigns: %{account: %{id: id}}} = conn,
-         _params
-       ),
-       do: conn
-
-  defp is_authorized_account(_conn, _params),
-    do: raise(ErrorResponse.Forbidden)
 
   def index(conn, _params) do
     accounts = Accounts.list_accounts()

@@ -8,20 +8,18 @@ defmodule RealDealApiWeb.Router do
     |> halt()
   end
 
-    def handle_errors(conn, %{reason: %{message: message}}) do
+  def handle_errors(conn, %{reason: %{message: message}}) do
     conn
     |> json(%{errors: message})
     |> halt()
   end
 
-   def handle_errors(conn, %{reason: reason}) do
+  def handle_errors(conn, %{reason: reason}) do
     conn
     |> put_status(:internal_server_error)
     |> Phoenix.Controller.json(%{errors: inspect(reason)})
     |> halt()
   end
-
-
 
   pipeline :api do
     plug :accepts, ["json"]
@@ -49,5 +47,6 @@ defmodule RealDealApiWeb.Router do
     get "/accounts/refresh_session", AccountController, :refresh_session
     patch "/accounts/:id", AccountController, :update
     delete "/accounts/:id", AccountController, :delete
+    patch "/users", UserController, :update
   end
 end
