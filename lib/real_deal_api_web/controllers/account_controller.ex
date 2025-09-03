@@ -93,11 +93,15 @@ defmodule RealDealApiWeb.AccountController do
   def update(conn, %{"account" => %{"password" => password} = account_params}) do
     account = conn.assigns.account
 
-    with true <-
-           Bcrypt.verify_pass(password, account.hash_password) || {:error, :invalid_password},
-         {:ok, %Account{} = account} <-
-           Accounts.update_account(account, Map.delete(account_params, "password")) do
-      render(conn, :show_expanded, account: account)
+    case Guardian.validate_password(password, account.hash_password) do
+      true ->
+        with {:ok, %Account{} = account} <-
+               Accounts.update_account(account, Map.delete(account_params, "password")) do
+          render(conn, :show_expanded, account: account)
+        end
+
+      false ->
+        {:error, :invalid_password}
     end
   end
 
@@ -105,13 +109,21 @@ defmodule RealDealApiWeb.AccountController do
     {:error, :missing_password}
   end
 
-  def delete(conn, _params) do
+  def delete(conn, %{"account" => %{"password" => password}}) do
     account = conn.assigns.account
 
-    with true <-
-           Bcrypt.verify_pass(password, account.hash_password) || {:error, :invalid_password},
-         {:ok, %Account{}} <- Accounts.delete_account(account) do
-      send_resp(conn, :no_content, "")
+    case Guardian.validate_password(password, account.hash_password) do
+      true ->
+        with {:ok, %Account{}} <- Accounts.delete_account(account) do
+          send_resp(conn, :no_content, "")
+        end
+
+      false ->
+        {:error, :invalid_password}
     end
+  end
+
+  def delete(_conn, _params) do
+    {:error, :missing_password}
   end
 end
