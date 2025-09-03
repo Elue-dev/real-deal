@@ -10,7 +10,7 @@ defmodule RealDealApiWeb.Auth.AuthorizedPlug do
   # end
 
   def is_authorized(
-        %{params: %{"id" => id}, assigns: %{account: %{id: id}}} = conn,
+        %{assigns: %{account: %{id: id}}} = conn,
         _params
       ),
       do: conn

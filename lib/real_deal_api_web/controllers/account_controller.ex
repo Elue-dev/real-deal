@@ -80,18 +80,37 @@ defmodule RealDealApiWeb.AccountController do
     render(conn, :show_expanded, account: expanded_account)
   end
 
-  def update(conn, %{"account" => account_params}) do
+  # def update(conn, %{"password" => password, "account" => account_params}) do
+  #   account = conn.assigns.account
+
+  #   with true <-
+  #          Bcrypt.verify_pass(password, account.hash_password) || {:error, :invalid_password},
+  #        {:ok, %Account{} = account} <- Accounts.update_account(account, account_params) do
+  #     render(conn, :show, account: account)
+  #   end
+  # end
+
+  def update(conn, %{"account" => %{"password" => password} = account_params}) do
     account = conn.assigns.account
 
-    with {:ok, %Account{} = account} <- Accounts.update_account(account, account_params) do
-      render(conn, :show, account: account)
+    with true <-
+           Bcrypt.verify_pass(password, account.hash_password) || {:error, :invalid_password},
+         {:ok, %Account{} = account} <-
+           Accounts.update_account(account, Map.delete(account_params, "password")) do
+      render(conn, :show_expanded, account: account)
     end
+  end
+
+  def update(_conn, %{"account" => _account_params}) do
+    {:error, :missing_password}
   end
 
   def delete(conn, _params) do
     account = conn.assigns.account
 
-    with {:ok, %Account{}} <- Accounts.delete_account(account) do
+    with true <-
+           Bcrypt.verify_pass(password, account.hash_password) || {:error, :invalid_password},
+         {:ok, %Account{}} <- Accounts.delete_account(account) do
       send_resp(conn, :no_content, "")
     end
   end

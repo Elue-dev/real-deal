@@ -45,8 +45,8 @@ defmodule RealDealApiWeb.Router do
     get "/me", AccountController, :me
     get "/accounts/logout", AccountController, :logout
     get "/accounts/refresh_session", AccountController, :refresh_session
-    patch "/accounts/:id", AccountController, :update
-    delete "/accounts/:id", AccountController, :delete
+    patch "/accounts", AccountController, :update
+    delete "/accounts", AccountController, :delete
     patch "/users", UserController, :update
     get "/users", UserController, :index
   end

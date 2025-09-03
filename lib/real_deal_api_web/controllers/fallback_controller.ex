@@ -40,6 +40,18 @@ defmodule RealDealApiWeb.FallbackController do
     |> json(%{error: "Forbidden"})
   end
 
+  def call(conn, {:error, :invalid_password}) do
+    conn
+    |> put_status(:forbidden)
+    |> json(%{error: "invalid password"})
+  end
+
+  def call(conn, {:error, :missing_password}) do
+    conn
+    |> put_status(:forbidden)
+    |> json(%{error: "password required"})
+  end
+
   def call(conn, {:error, _reason}) do
     conn
     |> put_status(:internal_server_error)
