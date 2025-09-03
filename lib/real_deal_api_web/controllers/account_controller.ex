@@ -48,7 +48,7 @@ defmodule RealDealApiWeb.AccountController do
   defp authorize_account(conn, email, password) do
     case Guardian.authenticate(email, password) do
       {:ok, account, token} ->
-        expanded_account = RealDealApi.Accounts.get_account_expanded!(account.id)
+        expanded_account = Accounts.get_account_expanded!(account.id)
 
         conn
         |> Plug.Conn.put_session(:account_id, account.id)
@@ -91,7 +91,8 @@ defmodule RealDealApiWeb.AccountController do
   # end
 
   def me(%{assigns: %{account: account}} = conn, _params) do
-    render(conn, :show, account: account)
+    expanded_account = Accounts.get_account_expanded!(account.id)
+    render(conn, :show_expanded, account: expanded_account)
   end
 
   def update(conn, %{"account" => account_params}) do

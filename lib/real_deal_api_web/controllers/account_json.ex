@@ -30,6 +30,12 @@ defmodule RealDealApiWeb.AccountJSON do
     }
   end
 
+  def show_expanded(%{account: account}) do
+    %{
+      data: data_with_user(account)
+    }
+  end
+
   defp data(%Account{} = account) do
     %{
       id: account.id,
