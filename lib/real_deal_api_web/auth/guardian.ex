@@ -49,13 +49,23 @@ defmodule RealDealApiWeb.Auth.Guardian do
     {:ok, account, token}
   end
 
-  defp token_options(type) do
-    case type do
-      :access -> [token_type: "access", ttl: {2, :hour}]
-      :reset -> [token_type: "reset", ttl: {15, :minute}]
-      :admin -> [token_type: "reset", ttl: {90, :day}]
-    end
-  end
+  # @spec token_options(:access | :reset | :admin) :: keyword()
+  # defp token_options(type) do
+  #   case type do
+  #     :access -> [token_type: "access", ttl: {2, :hour}]
+  #     :reset -> [token_type: "reset", ttl: {15, :minute}]
+  #     :admin -> [token_type: "admin", ttl: {90, :day}]
+  #   end
+  # end
+  #
+
+  defp token_options(:access), do: [token_type: "access", ttl: {2, :hour}]
+
+  defp token_options(:reset), do: [token_type: "reset", ttl: {15, :minute}]
+
+  defp token_options(:admin), do: [token_type: "admin", ttl: {90, :day}]
+
+  defp token_options(_), do: []
 
   def after_encode_and_sign(resource, claims, token, _options) do
     with {:ok, _} <- Guardian.DB.after_encode_and_sign(resource, claims["typ"], claims, token) do
