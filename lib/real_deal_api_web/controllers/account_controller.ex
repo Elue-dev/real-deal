@@ -48,10 +48,12 @@ defmodule RealDealApiWeb.AccountController do
   defp authorize_account(conn, email, password) do
     case Guardian.authenticate(email, password) do
       {:ok, account, token} ->
+        expanded_account = RealDealApi.Accounts.get_account_expanded!(account.id)
+
         conn
         |> Plug.Conn.put_session(:account_id, account.id)
         |> put_status(:ok)
-        |> render(:show, account: account, token: token)
+        |> render(:show_expanded, account: expanded_account, token: token)
 
       {:error, _reason} ->
         {:error, :unauthorized}

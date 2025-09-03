@@ -1,5 +1,6 @@
 defmodule RealDealApiWeb.AccountJSON do
   alias RealDealApi.Accounts.Account
+  alias RealDealApi.Users.User
 
   @doc """
   Renders a list of accounts.
@@ -22,13 +23,38 @@ defmodule RealDealApiWeb.AccountJSON do
     %{data: data(account)}
   end
 
+  def show_expanded(%{account: account, token: token}) do
+    %{
+      data: data_with_user(account),
+      token: token
+    }
+  end
 
-   defp data(%Account{} = account) do
+  defp data(%Account{} = account) do
+    %{
+      id: account.id,
+      email: account.email
+    }
+  end
+
+  defp data_with_user(%Account{} = account) do
     %{
       id: account.id,
       email: account.email,
+      user: user_data(account.user)
     }
   end
+
+  defp user_data(%User{} = user) do
+    %{
+      id: user.id,
+      full_name: user.full_name,
+      gender: user.gender,
+      biography: user.biography
+    }
+  end
+
+  defp user_data(nil), do: nil
 
   def error(%{message: message}) do
     %{
